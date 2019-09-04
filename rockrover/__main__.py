@@ -54,4 +54,7 @@ if __name__ == '__main__':
         logging.fatal('Could not even startup!')
         exit(1)
 
-    rockrover = app.rockrover()
+    rockrover = app.Rockrover()
+
+    rockrover.init()
+    rockrover.run()
