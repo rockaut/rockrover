@@ -48,7 +48,8 @@ if __name__ == '__main__':
         if args.loglevel is not None:
             config.set(section='LOGGING', option='loglevel', value=args.loglevel)
 
-        logging.basicConfig(level=config.get('LOGGING', 'loglevel'))
+        FORMAT = '%(asctime)s - %(name)s[%(lineno)s] - %(levelname)s - %(message)s'
+        logging.basicConfig(format=FORMAT, level=config.get('LOGGING', 'loglevel'))
 
     except:
         logging.fatal('Could not even startup!')
@@ -56,5 +57,10 @@ if __name__ == '__main__':
 
     rockrover = app.Rockrover()
 
-    rockrover.init()
-    rockrover.run()
+    try:
+        rockrover.setup()
+        rockrover.run()
+    except KeyboardInterrupt:
+        exit()
+    finally:
+        rockrover.stop()
