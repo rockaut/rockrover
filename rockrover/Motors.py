@@ -1,6 +1,7 @@
 
 import rockrover
 import logging
+import json
 
 from adafruit_motorkit import MotorKit
 
@@ -16,6 +17,26 @@ class Manager(rockrover.Base.ManagerBase):
         log.debug('Setup {}'.format(__name__))
         self.__board.setup(leftMotors, rightMotors)
         self.failsafe = True
+        #self._rockrover.controls.addAbsoluteMapping(rockrover.Controls.ABS_LEFTSTEER, self._leftsteer)
+        #self._rockrover.controls.addAbsoluteMapping(rockrover.Controls.ABS_RIGHTSTEER, self._rightsteer)
+        self._rockrover.controls.addAbsoluteMapping(rockrover.Controls.ABS_AXES, self._allsteer)
+        self._rockrover.controls.addKeyMapping(304, self._controlToggleFailsave)
+
+    def _allsteer(self, axes):
+        log.debug("axes: {}".format( json.dumps(axes) ))
+        self.set_throttles(axes[rockrover.Controls.ABS_LEFTSTEER], axes[rockrover.Controls.ABS_RIGHTSTEER])
+
+    def _leftsteer(self, event):
+        log.debug("Left: {}".format(event.value))
+
+    def _rightsteer(self, event):
+        log.debug("Right: {}".format(event.value))
+
+    def _controlToggleFailsave(self, event):
+        log.debug("Key value: {}".format(event.value))
+        if event.value == 0:
+            active = self.failsafe
+            self.failsafe = not active
 
     def get_failsafe(self):
         return self._failsafe

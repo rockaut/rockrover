@@ -14,20 +14,31 @@ class Core(rockrover.Base.ManagerBase):
     
     def setup(self):
         log.debug('Setup {}'.format(__name__))
-
+        self._rockrover.controls.addKeyMapping(304, self.turnOnLights)
+        self.__environment.setup()
+    
+    def turnOnLights(self, event):
+        if event.value == 0:
+            if self.__environment.leds.is_on():
+                self.__environment.leds.off()
+            else:
+                self.__environment.leds.on()
 
 class Board(rockrover.Base.BoardBase):
     def __init__(self, manager):
         super().__init__(manager)
-        self.__motion = None
-        self.__leds = None
-        self.__light = None
-        self.__weather = None
-        self.__analog = None
+        self.motion = None
+        self.leds = None
+        self.light = None
+        self.weather = None
+        self.analog = None
 
     def setup(self):
-        self.__motion = envirophat.motion
-        self.__leds = envirophat.leds
-        self.__light = envirophat.light
-        self.__weather = envirophat.weather
-        self.__analog = envirophat.analog
+        self.motion = envirophat.motion
+        self.leds = envirophat.leds
+        self.light = envirophat.light
+        self.weather = envirophat.weather
+        self.analog = envirophat.analog
+
+    def __del__(self):
+        self.leds.off()

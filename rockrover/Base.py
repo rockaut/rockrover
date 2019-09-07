@@ -3,7 +3,7 @@
 class ManagerBase():
 
     def __init__(self, rockrover):
-        self.__rockrover = rockrover
+        self._rockrover = rockrover
 
     def setup(self):
         pass
@@ -11,7 +11,7 @@ class ManagerBase():
 class BoardBase():
 
     def __init__(self, manager):
-        self.__manager = manager
+        self._manager = manager
     
     def setup(self):
         pass
