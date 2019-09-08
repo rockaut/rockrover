@@ -13,7 +13,8 @@ class Rockrover():
         self.controls = rockrover.Controls.ControlsManager(self)
 
     def setup(self):
-        self.motormanager.setup()
+        self.motormanager.setup([0], [1])
+        self.motormanager.throttlemodifier = 0.5
         self.core.setup()
         self.controls.setup()
 

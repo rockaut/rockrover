@@ -2,12 +2,21 @@
 import rockrover
 import logging
 import json
+import math
 
 from adafruit_motorkit import MotorKit
 
 log = logging.getLogger(__name__)
 
 class Manager(rockrover.Base.ManagerBase):
+
+    _batteryCurrent = 1500
+    _batteryVoltage = 7400
+
+    _motorCurrent = 240
+    _motorVoltage = 4500
+
+    _throttlemod = 1.0
 
     def __init__(self, rockrover):
         super().__init__(rockrover)
@@ -17,6 +26,7 @@ class Manager(rockrover.Base.ManagerBase):
         log.debug('Setup {}'.format(__name__))
         self.__board.setup(leftMotors, rightMotors)
         self.failsafe = True
+        self.throttlemodifier = round( self._motorVoltage / self._batteryVoltage, 2 )
         #self._rockrover.controls.addAbsoluteMapping(rockrover.Controls.ABS_LEFTSTEER, self._leftsteer)
         #self._rockrover.controls.addAbsoluteMapping(rockrover.Controls.ABS_RIGHTSTEER, self._rightsteer)
         self._rockrover.controls.addAbsoluteMapping(rockrover.Controls.ABS_AXES, self._allsteer)
@@ -51,11 +61,26 @@ class Manager(rockrover.Base.ManagerBase):
         if self.failsafe:
             log.warning("failsave active - no throttle")
             return
+
+        left = left * self._throttlemod
+        right = right * self._throttlemod
+
+        leftv = left * self._batteryVoltage * 0.001
+        rightv = right * self._batteryVoltage * 0.001
+
+        log.debug('throttlemod {} = {}v/{} = {}v [{}]'.format(left, leftv, right, rightv, self._throttlemod))
         
         self.__board.leftThrottle(left)
         self.__board.rightThrottle(right)
 
+    def get_throttleModifier(self):
+        return self._throttlemod
+    
+    def set_throttleModifier(self, value):
+        self._throttlemod = value
+
     failsafe = property(get_failsafe, set_failsafe)
+    throttlemodifier = property(get_throttleModifier, set_throttleModifier)
 
 class Board(rockrover.Base.BoardBase):
     address = 96
@@ -68,6 +93,8 @@ class Board(rockrover.Base.BoardBase):
     def setup(self, leftMotors = [0,1], rightMotors = [2,3]):
         log.debug('setting up motorkit')
         self.__kit = MotorKit(self.address)
+
+        log.debug('adding motors [{} / {}]'.format(json.dumps(leftMotors), json.dumps(rightMotors)))
         
         self.leftMotors = []
         for m in leftMotors:

@@ -1,7 +1,7 @@
 
 import rockrover
 import logging
-
+import json
 import evdev
 from select import select
 
@@ -10,6 +10,9 @@ log = logging.getLogger(__name__)
 ABS_LEFTSTEER = evdev.ecodes.ABS_Y
 ABS_RIGHTSTEER = evdev.ecodes.ABS_RZ
 ABS_AXES = -1
+
+ABS_HATX = evdev.ecodes.ABS_HAT0X
+ABS_HATY = evdev.ecodes.ABS_HAT0Y
 
 class ControlsManager(rockrover.Base.ManagerBase):
 
@@ -20,7 +23,7 @@ class ControlsManager(rockrover.Base.ManagerBase):
         self.__zones   = { }
         self.__emptyAxes = { }
         self._invertRight = True
-        self._invertLeft = True
+        self._invertLeft = False
 
     def setup(self):
         log.debug("setting up controls")
@@ -37,6 +40,7 @@ class ControlsManager(rockrover.Base.ManagerBase):
                 log.debug("adding {} [{} / {}] to devices".format(d.name, d.path, d.phys))
                 self._devices += [ d ]
                 caps = d.capabilities(verbose=False)
+                log.debug("caps: {}".format(json.dumps(caps)))
                 if evdev.ecodes.EV_ABS in caps.keys():
                     for (code, info) in caps[evdev.ecodes.EV_ABS]:
                         self.__zones[code] = info
